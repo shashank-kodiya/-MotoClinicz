@@ -6,6 +6,7 @@ import api, { errorMessage } from '../../api/client.js';
 import { formatReg } from '../../utils/format.js';
 import DatePicker from '../../components/DatePicker.jsx';
 import { DOC_FIELDS, DOC_YEARS, docQuick } from '../../utils/docDates.js';
+import { prepareUpload } from '../../utils/shrinkImage.js';
 
 const blank = { type: 'Car', brand: '', model: '', variant: '', year: new Date().getFullYear(), regNumber: '', fuel: 'Petrol', km: '' };
 const blankDocs = { insuranceExpiry: '', pucExpiry: '', rcExpiry: '' };
@@ -22,6 +23,20 @@ export default function VehicleForm() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(editing);
+  const [photo, setPhoto] = useState(null);      // { file, preview } chosen on the Add form
+  const [photoError, setPhotoError] = useState('');
+
+  useEffect(() => () => photo && URL.revokeObjectURL(photo.preview), [photo]);
+
+  const choosePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPhotoError('');
+    const ready = await prepareUpload(file);
+    if (ready.tooBig) return setPhotoError('This photo is too large. Try a smaller one.');
+    setPhoto({ file: ready.file, preview: URL.createObjectURL(ready.file) });
+  };
 
   useEffect(() => {
     if (!editing) return;
@@ -47,7 +62,18 @@ export default function VehicleForm() {
         navigate(`/customer/vehicles/${id}`);
       } else {
         const { data } = await api.post('/vehicles', { ...payload, km: Number(form.km), documents: docs });
-        navigate(`/customer/vehicles/${data._id}`);
+        // The vehicle is saved; now its photo. If the photo fails, the vehicle page says so and lets them retry.
+        let photoMsg = null;
+        if (photo) {
+          try {
+            const fd = new FormData();
+            fd.append('image', photo.file);
+            await api.post(`/vehicles/${data._id}/image`, fd);
+          } catch (err) {
+            photoMsg = { tone: 'bad', text: `Your vehicle was added, but the photo did not upload: ${errorMessage(err)} Try again below.` };
+          }
+        }
+        navigate(`/customer/vehicles/${data._id}`, { state: { photoMsg } });
       }
     } catch (err) {
       setError(errorMessage(err));
@@ -61,7 +87,7 @@ export default function VehicleForm() {
   const fe = (k) => fieldErrors[k] && <small className="err">{fieldErrors[k]}</small>;
 
   return (
-    <Layout title={editing ? 'Edit vehicle' : 'Add a vehicle'} subtitle={editing ? '' : 'You can add a photo after saving.'}>
+    <Layout title={editing ? 'Edit vehicle' : 'Add a vehicle'}>
       {loading ? <p className="muted">Loading…</p> : (
         <form className="card form-card" onSubmit={submit} noValidate>
           <div className="seg" role="group" aria-label="Vehicle type">
@@ -109,9 +135,27 @@ export default function VehicleForm() {
             </fieldset>
           )}
 
+          {!editing && (
+            <fieldset className="fieldset">
+              <legend>Vehicle photo (optional)</legend>
+              <div className="vphoto" style={{ maxWidth: 360 }}>
+                {photo ? <img src={photo.preview} alt="Chosen vehicle photo" /> : <span>No photo chosen</span>}
+              </div>
+              <div className="row">
+                <label className="btn">
+                  {photo ? 'Change photo' : 'Choose photo'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} hidden />
+                </label>
+                {photo && <button type="button" className="btn" onClick={() => setPhoto(null)}>Remove</button>}
+              </div>
+              {photoError && <small className="err">{photoError}</small>}
+              <p className="small muted">Service centers see this photo with your booking, so they can recognise your vehicle.</p>
+            </fieldset>
+          )}
+
           {error && <div className="alert bad">{error}</div>}
           <div className="row">
-            <button className="btn primary" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Add vehicle'}</button>
+            <button className="btn primary" disabled={busy}>{busy ? (photo && !editing ? 'Saving and uploading photo…' : 'Saving…') : editing ? 'Save changes' : 'Add vehicle'}</button>
             <Link className="btn" to={editing ? `/customer/vehicles/${id}` : '/customer/vehicles'}>Cancel</Link>
           </div>
         </form>

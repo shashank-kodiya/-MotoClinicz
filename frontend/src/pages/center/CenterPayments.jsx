@@ -5,6 +5,7 @@ import PaymentRequests from '../../components/PaymentRequests.jsx';
 import DailyPaymentSummary from '../../components/DailyPaymentSummary.jsx';
 import { PAYMENT_METHODS } from '../../components/PaymentMethods.jsx';
 import api, { errorMessage } from '../../api/client.js';
+import { prepareUpload } from '../../utils/shrinkImage.js';
 import './CenterPayments.css';
 
 export default function CenterPayments() {
@@ -51,12 +52,13 @@ export default function CenterPayments() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { setQrMsg({ tone: 'bad', text: 'The image must be smaller than 2 MB.' }); return; }
     setQrBusy('upload');
     setQrMsg(null);
     try {
+      const ready = await prepareUpload(file, { keepPng: true });
+      if (ready.tooBig) { setQrMsg({ tone: 'bad', text: 'This image is too large. Try a smaller one.' }); return; }
       const fd = new FormData();
-      fd.append('image', file);
+      fd.append('image', ready.file);
       const { data } = await api.post('/center/payment-settings/qr', fd);
       setQr(data.upiQr?.url || null);
       setQrMsg({ tone: 'good', text: 'QR uploaded. Customers see it when they pay their bill online.' });
@@ -135,7 +137,7 @@ export default function CenterPayments() {
         <h3>Your UPI QR code</h3>
         <p className="small muted">
           Upload the QR from your GPay, PhonePe, Paytm or bank app (the one at your counter). Customers scan it to pay their bill online.
-          Without it, they see a QR made from your UPI ID. JPG, PNG or WebP under 2 MB.
+          Without it, they see a QR made from your UPI ID. JPG, PNG or WebP.
         </p>
         <div className="upi-qr-manage">
           <div className="upi-qr-box">

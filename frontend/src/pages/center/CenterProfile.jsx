@@ -5,6 +5,7 @@ import MapView from '../../components/MapView.jsx';
 import useCenterProfile from '../../hooks/useCenterProfile.js';
 import useVehicleOptions from '../../hooks/useVehicleOptions.js';
 import { errorMessage } from '../../api/client.js';
+import { prepareUpload } from '../../utils/shrinkImage.js';
 import { mapsEnabled } from '../../hooks/useGoogleMaps.js';
 
 const FIELDS = ['name', 'description', 'address', 'city', 'pincode', 'phone', 'gstin'];
@@ -106,13 +107,14 @@ export default function CenterProfile() {
     setPhotoBusy(busy);
     try { await run(); setPhotoMsg({ tone: 'good', text }); return true; } catch (err) { setPhotoMsg({ tone: 'bad', text: errorMessage(err) }); return false; } finally { setPhotoBusy(''); }
   };
-  const uploadPhoto = (e) => {
+  const uploadPhoto = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { setPhotoMsg({ tone: 'bad', text: 'The photo must be smaller than 2 MB.' }); return; }
+    const ready = await prepareUpload(file);
+    if (ready.tooBig) { setPhotoMsg({ tone: 'bad', text: 'This photo is too large. Try a smaller one.' }); return; }
     const fd = new FormData();
-    fd.append('image', file);
+    fd.append('image', ready.file);
     fd.append('caption', photoCaption);
     photoAction('upload', () => save('post', '/center/photos', fd), 'Photo added. Customers will see it on your listing.')
       .then((ok) => ok && setPhotoCaption(''));
@@ -150,7 +152,7 @@ export default function CenterProfile() {
             </div>
             <p className="small muted">
               Customers see these on your listing when they search for a service center, like photos on Google.
-              Add your showroom front, service bays, waiting area and team. The cover photo is shown first. JPG, PNG or WebP, under 2 MB.
+              Add your showroom front, service bays, waiting area and team. The cover photo is shown first. JPG, PNG or WebP. Large photos are made smaller before uploading.
             </p>
             {photos.length > 0 ? (
               <div className="photo-manage">

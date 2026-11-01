@@ -9,6 +9,7 @@ import PhotoGrid from '../../components/PhotoGrid.jsx';
 import { HealthGrid, HealthHistory } from '../../components/HealthView.jsx';
 import BillTable from '../../components/BillTable.jsx';
 import api, { errorMessage, downloadFile } from '../../api/client.js';
+import { prepareUpload } from '../../utils/shrinkImage.js';
 import { getSocket } from '../../api/socket.js';
 import PaymentRequests from '../../components/PaymentRequests.jsx';
 import {
@@ -97,9 +98,10 @@ export default function JobCard() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return say('photo', 'bad', 'The photo must be smaller than 2 MB.');
+    const ready = await prepareUpload(file);
+    if (ready.tooBig) return say('photo', 'bad', 'This photo is too large. Try a smaller one.');
     const fd = new FormData();
-    fd.append('image', file);
+    fd.append('image', ready.file);
     fd.append('kind', photo.kind);
     fd.append('caption', photo.caption);
     setUploading(true);

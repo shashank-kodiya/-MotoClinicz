@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { niceDate } from '../../utils/booking.js';
 import Plate from '../../components/Plate.jsx';
@@ -9,11 +9,13 @@ import ServiceHistoryCard from '../../components/ServiceHistoryCard.jsx';
 import DatePicker from '../../components/DatePicker.jsx';
 import { DOC_YEARS, docQuick } from '../../utils/docDates.js';
 import api, { errorMessage } from '../../api/client.js';
+import { prepareUpload } from '../../utils/shrinkImage.js';
 import { fmtDate, fmtKm, toInputDate, docStatus, DOC_LABELS, kmPerDay } from '../../utils/format.js';
 
 export default function VehicleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [v, setV] = useState(null);
   const [error, setError] = useState('');
 
@@ -21,7 +23,8 @@ export default function VehicleDetail() {
   const [kmMsg, setKmMsg] = useState(null);
   const [docs, setDocs] = useState({});
   const [docMsg, setDocMsg] = useState(null);
-  const [photoMsg, setPhotoMsg] = useState(null);
+  // The Add vehicle form passes a message here when the photo chosen there could not be uploaded.
+  const [photoMsg, setPhotoMsg] = useState(location.state?.photoMsg || null);
   const [uploading, setUploading] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [health, setHealth] = useState(null);
@@ -65,12 +68,13 @@ export default function VehicleDetail() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return setPhotoMsg({ tone: 'bad', text: 'The photo must be smaller than 2 MB.' });
     setPhotoMsg(null);
     setUploading(true);
     try {
+      const ready = await prepareUpload(file);
+      if (ready.tooBig) return setPhotoMsg({ tone: 'bad', text: 'This photo is too large. Try a smaller one.' });
       const fd = new FormData();
-      fd.append('image', file);
+      fd.append('image', ready.file);
       const { data } = await api.post(`/vehicles/${id}/image`, fd);
       apply(data);
       setPhotoMsg({ tone: 'good', text: 'Photo uploaded.' });
@@ -129,7 +133,7 @@ export default function VehicleDetail() {
             </label>
             {v.image?.url && <button className="btn bad" onClick={removePhoto}>Remove photo</button>}
           </div>
-          <p className="small muted">JPG, PNG or WebP under 2 MB. Stored in Cloudinary.</p>
+          <p className="small muted">JPG, PNG or WebP. Large phone photos are made smaller before uploading.</p>
           {photoMsg && <div className={`alert ${photoMsg.tone}`}>{photoMsg.text}</div>}
         </div>
 

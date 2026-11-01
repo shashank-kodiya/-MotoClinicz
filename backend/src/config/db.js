@@ -5,8 +5,12 @@ export async function connectDB(uri) {
     throw new Error('MONGO_URI is missing. Copy .env.example to .env and add your MongoDB Atlas connection string.');
   }
   mongoose.set('strictQuery', true);
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
-  console.log(`MongoDB connected: ${mongoose.connection.host}`);
+  // An Atlas string with no database name (".../?retryWrites...") would use the shared "test" database,
+  // so SVMS keeps its own one: MONGO_DB_NAME, or "svms" by default.
+  const named = /^mongodb(\+srv)?:\/\/[^/]+\/[^/?]+/.test(uri);
+  const dbName = process.env.MONGO_DB_NAME || (named ? undefined : 'svms');
+  await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000, ...(dbName ? { dbName } : {}) });
+  console.log(`MongoDB connected: ${mongoose.connection.host} (database: ${mongoose.connection.name})`);
 }
 
 // Builds every index (including the unique ones that prevent double booking)
