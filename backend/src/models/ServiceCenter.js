@@ -115,6 +115,11 @@ const serviceCenterSchema = new mongoose.Schema(
 
     photos: { type: [centerPhotoSchema], default: [] },
 
+    // The center's Google listing, found once and remembered (Google allows storing place IDs) so the
+    // details page reads it by ID instead of searching each time. id null = no listing matched.
+    // searched: the name and pin it was searched for; a new name or pin searches again.
+    googlePlace: { id: String, searched: String, checkedAt: Date },
+
     // Roadside help: customers stuck on the way can find this center's tow trucks and request a tow.
     towing: {
       enabled: { type: Boolean, default: false },

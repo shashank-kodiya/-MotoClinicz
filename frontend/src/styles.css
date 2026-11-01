@@ -356,14 +356,15 @@ th.num, td.num { text-align: right; white-space: nowrap; }
 .datepicker { position: relative; }
 .datepicker__field {
   width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 6px 6px 6px 14px; border: 1px solid var(--line); border-radius: 20px;
+  padding: 4px 4px 4px 11px; border: 1px solid var(--line); border-radius: 7px;
   background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; text-align: left; cursor: pointer;
   transition: border-color .18s ease, box-shadow .18s ease;
 }
-.book-service-page .datepicker__field { background: rgba(8, 12, 17, .55); border-color: rgba(170, 190, 220, .24); }
+.book-service-page .datepicker__field { background: rgba(8, 12, 17, .55); border-color: rgba(170, 190, 220, .24); border-radius: 20px; padding: 6px 6px 6px 14px; }
+.datepicker__field.empty span:first-child { color: var(--muted); font-weight: 500; }
 .datepicker__field:hover { border-color: var(--accent); }
 .datepicker__field.open, .datepicker__field:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.datepicker__icon { width: 32px; height: 32px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.datepicker__icon { width: 30px; height: 30px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
 
 .datepicker__pop {
   position: absolute; z-index: 60; top: calc(100% + 8px); left: 0; width: 312px; max-width: calc(100vw - 32px);
@@ -404,3 +405,15 @@ th.num, td.num { text-align: right; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .datepicker__pop { animation: none; } .datepicker__day:hover:not(:disabled) { transform: none; } }
 /* Cards are separate layers (they animate), so lift the one holding an open calendar above the cards below it. */
 .card:has(.datepicker__pop) { position: relative; z-index: 50; }
+/* Date picker: month / year dropdowns in the header, opening to the left near the right edge, Clear chip */
+.datepicker__pop.right { left: auto; right: 0; }
+.datepicker__jump { display: flex; gap: 6px; }
+.datepicker__jump select {
+  appearance: none; -webkit-appearance: none; border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 26px 6px 12px; background: var(--sunk) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a2adbd'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--ink); font: inherit; font-weight: 700; font-size: .9rem; cursor: pointer;
+}
+.datepicker__jump select:hover, .datepicker__jump select:focus-visible { outline: none; border-color: var(--accent); }
+.datepicker__chip.clear { color: var(--bad); }
+.datepicker__chip.clear:hover { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.datepicker__foot { flex-wrap: wrap; }

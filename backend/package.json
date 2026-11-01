@@ -13,6 +13,7 @@
     "seed:showrooms": "node scripts/seed-showrooms.js",
     "seed:kia": "node scripts/seed-showrooms.js",
     "reminders": "node scripts/reminders.js",
+    "google:places": "node scripts/google-places.js",
     "test": "node --test"
   },
   "engines": {

@@ -1,22 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { localDate } from '../utils/booking.js';
 
-// Our own date picker (the browser's calendar pop-up can't be styled): a rounded card with month
-// navigation, quick "Today / Tomorrow" chips and keyboard support. Works with 'YYYY-MM-DD' strings.
+// Our own date picker (the browser's calendar pop-up can't be styled): a rounded card with month and
+// year dropdowns, quick-pick chips, an optional Clear button and keyboard support. Works with 'YYYY-MM-DD'.
+//   quick:     [[label, 'YYYY-MM-DD'], ...] shortcuts (default: Today, Tomorrow)
+//   clearable: show "Clear" (for optional dates); onChange('') clears
+//   minYear / maxYear: range of the year dropdown (default: min/max, or 30 years back to 20 ahead)
 const WEEK = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = (n) => String(n).padStart(2, '0');
 const toStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const toDate = (s) => new Date(`${s}T00:00:00`);
-const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return toStr(d); };
+export const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return toStr(d); };
+export const addMonths = (s, n) => { const d = toDate(s); d.setMonth(d.getMonth() + n); return toStr(d); };
 const pretty = (s) => toDate(s).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
-export default function DatePicker({ value, onChange, min, max, label = 'Date' }) {
+export default function DatePicker({ value, onChange, min, max, label = 'Date', placeholder = 'Choose a date', quick, clearable = false, minYear, maxYear }) {
+  const today = localDate();
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState(() => (value || localDate()).slice(0, 7)); // 'YYYY-MM' shown
-  const [focus, setFocus] = useState(value || localDate());
+  const [alignRight, setAlignRight] = useState(false);
+  const [view, setView] = useState(() => (value || today).slice(0, 7)); // 'YYYY-MM' shown
+  const [focus, setFocus] = useState(value || today);
   const box = useRef(null);
   const grid = useRef(null);
-  const today = localDate();
 
   const allowed = (s) => (!min || s >= min) && (!max || s <= max);
 
@@ -27,14 +33,17 @@ export default function DatePicker({ value, onChange, min, max, label = 'Date' }
     return Array.from({ length: 42 }, (_, i) => addDays(start, i));
   }, [view]);
 
-  const monthTitle = toDate(`${view}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-  const shiftMonth = (n) => {
-    const d = toDate(`${view}-01`);
-    d.setMonth(d.getMonth() + n);
-    setView(toStr(d).slice(0, 7));
-  };
+  const [vy, vm] = view.split('-').map(Number);
+  const lastOfView = toStr(new Date(vy, vm, 0));
   const canPrev = !min || `${view}-01` > min;
-  const canNext = !max || addDays(toStr(new Date(toDate(`${view}-01`).getFullYear(), toDate(`${view}-01`).getMonth() + 1, 0)), 0) < max;
+  const canNext = !max || lastOfView < max;
+  const shiftMonth = (n) => setView(addMonths(`${view}-01`, n).slice(0, 7));
+
+  // Years in the year dropdown: limited by min/max, otherwise 30 years back and 20 ahead.
+  const thisYear = Number(today.slice(0, 4));
+  const fromYear = minYear ?? (min ? Number(min.slice(0, 4)) : thisYear - 30);
+  const toYear = maxYear ?? (max ? Number(max.slice(0, 4)) : thisYear + 20);
+  const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => fromYear + i);
 
   const pick = (s) => {
     if (!allowed(s)) return;
@@ -42,11 +51,13 @@ export default function DatePicker({ value, onChange, min, max, label = 'Date' }
     setOpen(false);
   };
 
-  // Open on the selected month; close on outside click or Esc.
+  // Open on the selected month (to the left if there is no room on the right); close on outside click.
   useEffect(() => {
     if (!open) return undefined;
     setView((value || today).slice(0, 7));
     setFocus(value || today);
+    const r = box.current?.getBoundingClientRect();
+    setAlignRight(!!r && r.left + 320 > window.innerWidth);
     const onDoc = (e) => { if (!box.current?.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
@@ -55,7 +66,7 @@ export default function DatePicker({ value, onChange, min, max, label = 'Date' }
   // Keep keyboard focus on the focused day.
   useEffect(() => {
     if (!open) return;
-    grid.current?.querySelector(`[data-day="${focus}"]`)?.focus();
+    grid.current?.querySelector(`[data-day="${focus}"]`)?.focus({ preventScroll: true });
   }, [open, focus, view]);
 
   const onKey = (e) => {
@@ -76,22 +87,29 @@ export default function DatePicker({ value, onChange, min, max, label = 'Date' }
     }
   };
 
-  const quick = [['Today', today], ['Tomorrow', addDays(today, 1)]].filter(([, s]) => allowed(s));
+  const shortcuts = (quick || [['Today', today], ['Tomorrow', addDays(today, 1)]]).filter(([, s]) => allowed(s));
 
   return (
-    <div className="datepicker" ref={box}>
-      <button type="button" className={`datepicker__field ${open ? 'open' : ''}`} onClick={() => setOpen(!open)} aria-haspopup="dialog" aria-expanded={open} aria-label={`${label}: ${value ? pretty(value) : 'choose a date'}`}>
-        <span>{value ? pretty(value) : 'Choose a date'}</span>
+    <div className="datepicker" ref={box} onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}>
+      <button type="button" className={`datepicker__field ${open ? 'open' : ''} ${value ? '' : 'empty'}`} onClick={() => setOpen(!open)} aria-haspopup="dialog" aria-expanded={open} aria-label={`${label}: ${value ? pretty(value) : 'not set'}`}>
+        <span>{value ? pretty(value) : placeholder}</span>
         <span className="datepicker__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14v10ZM7 12h5v5H7v-5Z" /></svg>
         </span>
       </button>
 
       {open && (
-        <div className="datepicker__pop" role="dialog" aria-label={`Choose ${label.toLowerCase()}`}>
+        <div className={`datepicker__pop ${alignRight ? 'right' : ''}`} role="dialog" aria-label={`Choose ${label.toLowerCase()}`}>
           <div className="datepicker__head">
             <button type="button" className="datepicker__nav" onClick={() => shiftMonth(-1)} disabled={!canPrev} aria-label="Previous month">‹</button>
-            <b>{monthTitle}</b>
+            <div className="datepicker__jump">
+              <select value={vm} onChange={(e) => setView(`${vy}-${pad(e.target.value)}`)} aria-label="Month">
+                {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+              </select>
+              <select value={vy} onChange={(e) => setView(`${e.target.value}-${pad(vm)}`)} aria-label="Year">
+                {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
             <button type="button" className="datepicker__nav" onClick={() => shiftMonth(1)} disabled={!canNext} aria-label="Next month">›</button>
           </div>
           <div className="datepicker__week" aria-hidden="true">{WEEK.map((w) => <span key={w}>{w}</span>)}</div>
@@ -117,9 +135,10 @@ export default function DatePicker({ value, onChange, min, max, label = 'Date' }
               );
             })}
           </div>
-          {quick.length > 0 && (
+          {(shortcuts.length > 0 || clearable || max) && (
             <div className="datepicker__foot">
-              {quick.map(([t, s]) => <button key={t} type="button" className={`datepicker__chip ${s === value ? 'on' : ''}`} onClick={() => pick(s)}>{t}</button>)}
+              {shortcuts.map(([t, s]) => <button key={t} type="button" className={`datepicker__chip ${s === value ? 'on' : ''}`} onClick={() => pick(s)}>{t}</button>)}
+              {clearable && value && <button type="button" className="datepicker__chip clear" onClick={() => { onChange(''); setOpen(false); }}>Clear</button>}
               {max && <span className="datepicker__hint">Up to {pretty(max).replace(/^\w+, /, '')}</span>}
             </div>
           )}

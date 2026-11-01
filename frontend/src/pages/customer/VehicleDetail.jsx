@@ -6,6 +6,8 @@ import Plate from '../../components/Plate.jsx';
 import Suggestions from '../../components/Suggestions.jsx';
 import { HealthHistory } from '../../components/HealthView.jsx';
 import ServiceHistoryCard from '../../components/ServiceHistoryCard.jsx';
+import DatePicker from '../../components/DatePicker.jsx';
+import { DOC_YEARS, docQuick } from '../../utils/docDates.js';
 import api, { errorMessage } from '../../api/client.js';
 import { fmtDate, fmtKm, toInputDate, docStatus, DOC_LABELS, kmPerDay } from '../../utils/format.js';
 
@@ -136,10 +138,10 @@ export default function VehicleDetail() {
           {Object.entries(DOC_LABELS).map(([k, label]) => {
             const s = docStatus(v.documents?.[k]);
             return (
-              <label key={k} className="field">
+              <div key={k} className="field">
                 <span>{label} expiry <em className={`chip ${s.tone}`}>{s.text}</em></span>
-                <input type="date" value={docs[k] || ''} onChange={(e) => setDocs({ ...docs, [k]: e.target.value })} />
-              </label>
+                <DatePicker label={`${label} expiry`} placeholder="Not set" value={docs[k] || ''} onChange={(d) => setDocs({ ...docs, [k]: d })} quick={docQuick(k)} clearable {...DOC_YEARS} />
+              </div>
             );
           })}
           <div className="row"><button className="btn primary">Save dates</button></div>

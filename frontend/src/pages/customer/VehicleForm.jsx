@@ -4,6 +4,8 @@ import Layout from '../../components/Layout.jsx';
 import useVehicleOptions from '../../hooks/useVehicleOptions.js';
 import api, { errorMessage } from '../../api/client.js';
 import { formatReg } from '../../utils/format.js';
+import DatePicker from '../../components/DatePicker.jsx';
+import { DOC_FIELDS, DOC_YEARS, docQuick } from '../../utils/docDates.js';
 
 const blank = { type: 'Car', brand: '', model: '', variant: '', year: new Date().getFullYear(), regNumber: '', fuel: 'Petrol', km: '' };
 const blankDocs = { insuranceExpiry: '', pucExpiry: '', rcExpiry: '' };
@@ -96,9 +98,12 @@ export default function VehicleForm() {
             <fieldset className="fieldset">
               <legend>Document expiry dates (optional)</legend>
               <div className="grid3">
-                <label className="field"><span>Insurance</span><input type="date" value={docs.insuranceExpiry} onChange={(e) => setDocs({ ...docs, insuranceExpiry: e.target.value })} /></label>
-                <label className="field"><span>PUC</span><input type="date" value={docs.pucExpiry} onChange={(e) => setDocs({ ...docs, pucExpiry: e.target.value })} /></label>
-                <label className="field"><span>RC</span><input type="date" value={docs.rcExpiry} onChange={(e) => setDocs({ ...docs, rcExpiry: e.target.value })} /></label>
+                {DOC_FIELDS.map(([k, label]) => (
+                  <div key={k} className="field">
+                    <span>{label}</span>
+                    <DatePicker label={`${label} expiry`} placeholder="Not set" value={docs[k]} onChange={(d) => setDocs({ ...docs, [k]: d })} quick={docQuick(k)} clearable {...DOC_YEARS} />
+                  </div>
+                ))}
               </div>
               <p className="small muted">We use these to remind you before they expire.</p>
             </fieldset>

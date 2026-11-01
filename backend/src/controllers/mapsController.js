@@ -1,7 +1,7 @@
 import ServiceCenter, { publicPhotos, acceptedMethods } from '../models/ServiceCenter.js';
 import AppError, { asyncHandler } from '../utils/AppError.js';
 import { haversineKm, hasLocation, estimateRoute } from '../services/geo.js';
-import { mapsReady, geocode, drivingRoute, nearbyGarages, googleListing } from '../services/maps.js';
+import { mapsReady, geocode, drivingRoute, nearbyGarages, findGooglePlaceId, googlePlaceDetails } from '../services/maps.js';
 import { serviceByKey, DAYS } from '../constants/services.js';
 import { dayOfWeek, toMinutes } from '../utils/slots.js';
 import { nowIST, addDaysStr } from '../utils/time.js';
@@ -75,16 +75,40 @@ export function openStatus(center) {
   return { isOpen: false, label: 'Closed' };
 }
 
+// The center's Google listing. The place is searched for once (and again after 30 days, or when the
+// center's name or pin changes) and its ID is saved; every other view reads it by ID, which is cheaper
+// and does not use the daily search limit. A "no match" is remembered too, so it isn't searched on every view.
+const RESEARCH_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
+export async function centerGoogleListing(c) {
+  if (!mapsReady()) return null;
+  const searched = `${c.name}|${c.location.lat.toFixed(5)},${c.location.lng.toFixed(5)}`;
+  const saved = c.googlePlace;
+  const fresh = saved?.checkedAt && saved.searched === searched && Date.now() - new Date(saved.checkedAt).getTime() < RESEARCH_AFTER_MS;
+  if (fresh) {
+    if (!saved.id) return null;
+    try {
+      return await googlePlaceDetails(saved.id);
+    } catch (err) {
+      // Google sometimes retires a place ID: forget it and search again next time.
+      await ServiceCenter.updateOne({ _id: c._id }, { $unset: { googlePlace: 1 } });
+      throw err;
+    }
+  }
+  const id = await findGooglePlaceId(c.name, c.location);
+  await ServiceCenter.updateOne({ _id: c._id }, { $set: { googlePlace: { id: id || null, searched, checkedAt: new Date() } } });
+  return id ? googlePlaceDetails(id) : null;
+}
+
 // GET /api/maps/centers/:id   Everything for the center's details page (like a Google Maps listing).
 export const centerDetails = asyncHandler(async (req, res) => {
   const c = await ServiceCenter.findOne({ _id: req.params.id, verificationStatus: 'verified' })
-    .select('name description address city pincode phone brands services workingHours holidays location ratingAvg ratingCount photos createdAt paymentSettings.methods paymentSettings.acceptsUpi paymentSettings.payBeforePickup').lean();
+    .select('name description address city pincode phone brands services workingHours holidays location ratingAvg ratingCount photos createdAt googlePlace paymentSettings.methods paymentSettings.acceptsUpi paymentSettings.payBeforePickup').lean();
   if (!c) throw new AppError('Service center not found.', 404);
   const { date } = nowIST();
   const located = hasLocation(c);
   let google = null;
   if (located) {
-    try { google = await googleListing(c.name, c.location); } catch (err) { console.warn(`Google listing failed: ${err.message}`); }
+    try { google = await centerGoogleListing(c); } catch (err) { console.warn(`Google listing failed: ${err.message}`); }
   }
   res.json({
     _id: c._id, name: c.name, description: c.description, address: c.address, city: c.city, pincode: c.pincode, phone: c.phone,
