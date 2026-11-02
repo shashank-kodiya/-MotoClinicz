@@ -1,7 +1,7 @@
 {
   "name": "svms-backend",
   "version": "1.0.0",
-  "description": "Cloud-Based Smart Vehicle Service Management System - API",
+  "description": "MotoClinicz - Check-up. Fix-up. Gear up. Cloud-based vehicle service platform (API)",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

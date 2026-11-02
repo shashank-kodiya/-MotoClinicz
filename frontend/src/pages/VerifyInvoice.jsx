@@ -18,10 +18,10 @@ export default function VerifyInvoice() {
   return (
     <div className="auth-wrap">
       <div className="card verify-card">
-        <div className="brand"><span className="brand-mark">SV</span><div><b>Smart Vehicle Service</b><span>Invoice check</span></div></div>
+        <div className="brand"><span className="brand-mark">MC</span><div><b>MotoClinicz</b><span>Invoice check</span></div></div>
         {!res ? <p className="muted">Checking…</p> : res.valid ? (
           <>
-            <div className="alert good"><span className="verify-mark" aria-hidden="true">✓</span><b>This invoice is genuine.</b><span className="small">It was issued through Smart Vehicle Service and has not been changed.</span></div>
+            <div className="alert good"><span className="verify-mark" aria-hidden="true">✓</span><b>This invoice is genuine.</b><span className="small">It was issued through MotoClinicz and has not been changed.</span></div>
             <dl className="kv">
               <dt>Invoice no.</dt><dd className="mono">{res.invoiceNo}</dd>
               <dt>Date</dt><dd>{new Date(res.issuedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</dd>
@@ -35,7 +35,7 @@ export default function VerifyInvoice() {
         ) : (
           <div className="alert bad"><span className="verify-mark" aria-hidden="true">✗</span><b>Invoice not found.</b><span className="small">{res.message}</span></div>
         )}
-        <Link className="small" to="/login">Go to Smart Vehicle Service</Link>
+        <Link className="small" to="/login">Go to MotoClinicz</Link>
       </div>
     </div>
   );

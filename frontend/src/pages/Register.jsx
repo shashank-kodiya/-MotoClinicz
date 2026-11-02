@@ -37,7 +37,7 @@ export default function Register() {
   return (
     <div className="auth-wrap">
       <form className="card auth-card wide" onSubmit={submit} noValidate>
-        <div className="brand"><span className="brand-mark">SV</span><b>Smart Vehicle Service</b></div>
+        <div className="brand"><span className="brand-mark">MC</span><div><b>MotoClinicz</b><span>Check-up. Fix-up. Gear up.</span></div></div>
         <h1>Create an account</h1>
 
         <div className="seg" role="group" aria-label="Account type">

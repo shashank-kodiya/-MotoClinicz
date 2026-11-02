@@ -92,9 +92,9 @@ export default function Login() {
       </div>
 
       <header className="vsmsLogin__header">
-        <Link className="vsmsLogin__brand" to="/login" aria-label="VSMS home">
+        <Link className="vsmsLogin__brand" to="/login" aria-label="MotoClinicz home">
           <span className="vsmsLogin__brandMark"><Icon name="wrench" /></span>
-          <span><b>Vehicle Service Management System</b><small>VSMS · Workshop &amp; customer platform</small></span>
+          <span><b>MotoClinicz</b><small>Check-up. Fix-up. Gear up.</small></span>
         </Link>
         <span className="vsmsLogin__headerTag">Secure account access</span>
       </header>
@@ -103,7 +103,7 @@ export default function Login() {
         <div className="vsmsLogin__intro">
           <div>
             <span className="vsmsLogin__eyebrow">{authMode === 'login' ? 'Welcome back' : 'Get started'}</span>
-            <h1>{authMode === 'login' ? 'Sign in to VSMS' : 'Join VSMS'}</h1>
+            <h1>{authMode === 'login' ? 'Sign in to MotoClinicz' : 'Join MotoClinicz'}</h1>
             <p>{authMode === 'login' ? 'Choose your portal to continue to your account.' : 'Create an account for your selected portal.'}</p>
           </div>
           <div className="vsmsLogin__tabs" role="group" aria-label="Choose portal">
@@ -216,7 +216,7 @@ export default function Login() {
             <img key={portal} src={portal === 'customer' ? customerGarage : centerTruck} alt={portal === 'customer' ? 'Customer at a vehicle service center' : 'Tow truck carrying a vehicle'} />
             <div className="vsmsLogin__visualShade" />
             <div className="vsmsLogin__visualCopy" key={`${portal}-${authMode}`}>
-              <span className="vsmsLogin__visualTag">{authMode === 'login' ? (portal === 'customer' ? 'For vehicle owners' : 'For workshops') : 'Get started with VSMS'}</span>
+              <span className="vsmsLogin__visualTag">{authMode === 'login' ? (portal === 'customer' ? 'For vehicle owners' : 'For workshops') : 'Get started with MotoClinicz'}</span>
               <h3>{authMode === 'login'
                 ? (portal === 'customer' ? 'Hand over the keys. Follow every step.' : 'Every job, booking, and bay in one place.')
                 : (portal === 'customer' ? 'Your next service starts here.' : 'Bring your workshop online.')}</h3>
@@ -230,7 +230,7 @@ export default function Login() {
           </aside>
         </section>
 
-        <p className="vsmsLogin__footnote"><span aria-hidden="true">i</span> Sign in with the email and password linked to your VSMS account.</p>
+        <p className="vsmsLogin__footnote"><span aria-hidden="true">i</span> Sign in with the email and password linked to your MotoClinicz account.</p>
       </main>
     </div>
   );

@@ -5,7 +5,7 @@ import { errorMessage } from '../api/client.js';
 export const COMPLAINT_LABELS = {
   service_quality: 'Service quality', overcharging: 'Overcharging', delay: 'Delay', staff_behaviour: 'Staff behaviour', damage: 'Damage to vehicle', other: 'Other'
 };
-const WHO = { customer: 'Customer', service_center: 'Service center', admin: 'SVMS support' };
+const WHO = { customer: 'Customer', service_center: 'Service center', admin: 'MotoClinicz support' };
 const TONE = { open: 'warn', responded: 'info', resolved: 'good' };
 const STATUS_TEXT = { open: 'Waiting for the center', responded: 'Center / support replied', resolved: 'Resolved' };
 
@@ -45,7 +45,7 @@ export default function ComplaintThread({ c, onSend, onResolve, resolveLabel = '
           </div>
         </>
       )}
-      {!c.isOpen && <p className="small muted">Closed {c.resolution?.by === 'admin' ? 'by SVMS support' : 'by the customer'}.</p>}
+      {!c.isOpen && <p className="small muted">Closed {c.resolution?.by === 'admin' ? 'by MotoClinicz support' : 'by the customer'}.</p>}
       <Notice msg={msg} />
     </div>
   );

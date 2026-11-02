@@ -45,7 +45,7 @@ export function scoreAll(entries) {
     if ((e.ratingCount || 0) >= 3 && e.ratingAvg >= 4.5) reasons.push('Highly rated');
     if (e.totalSlots && parts.availability >= 0.5) reasons.push('Plenty of free slots');
     else if (e.freeSlots === 0) reasons.push('No free slots on this date');
-    if (parts.experience >= 0.5) reasons.push('Experienced on SVMS');
+    if (parts.experience >= 0.5) reasons.push('Experienced on MotoClinicz');
     return { score, reasons };
   });
 }

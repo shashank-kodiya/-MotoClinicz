@@ -191,8 +191,8 @@ export const adminComplaintMessage = asyncHandler(async (req, res) => {
   c.status = 'responded';
   await c.save();
   const owner = await ownerOf(c.center);
-  await notify(c.customer, { type: 'feedback', title: 'Message from SVMS support', body: req.body.text.slice(0, 140), link: `/customer/bookings/${c.booking}`, email: true });
-  if (owner) await notify(owner, { type: 'feedback', title: 'Message from SVMS support', body: `${c.bookingNo}: ${req.body.text.slice(0, 120)}`, link: '/center/feedback' });
+  await notify(c.customer, { type: 'feedback', title: 'Message from MotoClinicz support', body: req.body.text.slice(0, 140), link: `/customer/bookings/${c.booking}`, email: true });
+  if (owner) await notify(owner, { type: 'feedback', title: 'Message from MotoClinicz support', body: `${c.bookingNo}: ${req.body.text.slice(0, 120)}`, link: '/center/feedback' });
   res.json(c);
 });
 
@@ -207,8 +207,8 @@ export const adminResolveComplaint = asyncHandler(async (req, res) => {
   c.resolution = { by: 'admin', at: new Date() };
   await c.save();
   const owner = await ownerOf(c.center);
-  await notify(c.customer, { type: 'feedback', title: 'Your complaint was resolved', body: req.body.note || `SVMS support closed the complaint on ${c.bookingNo}.`, link: `/customer/bookings/${c.booking}`, email: true });
-  if (owner) await notify(owner, { type: 'feedback', title: 'Complaint resolved by support', body: `${c.bookingNo} was closed by SVMS support.`, link: '/center/feedback' });
+  await notify(c.customer, { type: 'feedback', title: 'Your complaint was resolved', body: req.body.note || `MotoClinicz support closed the complaint on ${c.bookingNo}.`, link: `/customer/bookings/${c.booking}`, email: true });
+  if (owner) await notify(owner, { type: 'feedback', title: 'Complaint resolved by support', body: `${c.bookingNo} was closed by MotoClinicz support.`, link: '/center/feedback' });
   res.json(c);
 });
 

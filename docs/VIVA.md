@@ -1,6 +1,6 @@
-# SVMS: Viva guide
+# MotoClinicz: Viva guide
 
-Cloud-Based Smart Vehicle Service Management System. React + Node.js/Express + MongoDB Atlas. Three roles: Customer, Service Center, Admin.
+MotoClinicz (*Check-up. Fix-up. Gear up.*): a cloud-based vehicle service management system. React + Node.js/Express + MongoDB Atlas. Three roles: Customer, Service Center, Admin.
 
 ## 1. The system in one minute
 A customer adds vehicles, finds a nearby verified service center, and books a one-hour slot. The center accepts, inspects the vehicle, recommends extra repairs (the customer approves or rejects each one), does the work with photo proof, and generates a GST bill with a PDF and QR code. The customer pays by UPI (demo) or at the counter, collects the vehicle with a 4-digit pickup code, and then rates the center. The admin verifies centers, watches revenue and analytics, and handles complaints. Reminders and notifications keep customers informed.

@@ -27,7 +27,7 @@ export async function sendHistoryPdf(res, h, url) {
 
   // Header
   doc.fillColor(ink).font('Helvetica-Bold').fontSize(18).text('Service History Report', L, 40);
-  doc.font('Helvetica').fontSize(9).fillColor(soft).text('Smart Vehicle Service · every service done through authorised centers on the platform', L, 62);
+  doc.font('Helvetica').fontSize(9).fillColor(soft).text('MotoClinicz · Check-up. Fix-up. Gear up. · every service done through authorised centers on the platform', L, 62);
   doc.font('Helvetica').fontSize(9).fillColor(soft)
     .text(`Report date ${fmtDate(h.generatedAt)}`, 380, 44, { width: W - 340, align: 'right' })
     .text(`Current reading ${fmtKm(v.km)}`, { width: W - 340, align: 'right' });

@@ -119,7 +119,7 @@ export default function CustomerTowing() {
         <h3>Nearest centers with towing</h3>
         {!loc ? <p className="small muted">Share your location to see centers whose tow trucks reach you.</p>
           : centers === null ? <p className="small muted">Looking for tow trucks near you…</p>
-            : centers.length === 0 ? <div className="empty small">No center on SVMS offers towing where you are. Call 112 in an emergency, or a local towing service.</div>
+            : centers.length === 0 ? <div className="empty small">No center on MotoClinicz offers towing where you are. Call 112 in an emergency, or a local towing service.</div>
               : (
                 <div className="list">
                   {centers.map((c) => (

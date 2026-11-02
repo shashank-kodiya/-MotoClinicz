@@ -44,9 +44,9 @@ export default function Layout({ title, subtitle, actions, children, className =
     <div className={['app', user?.role === 'customer' ? 'customer-portal' : '', user?.role === 'service_center' ? 'center-portal' : '', user?.role === 'admin' ? 'admin-portal' : '', className].filter(Boolean).join(' ')}>
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">SV</span>
+          <span className="brand-mark">MC</span>
           <div>
-            <b>Smart Vehicle Service</b>
+            <b>MotoClinicz</b>
             <span>{ROLE_LABEL[user?.role]}</span>
           </div>
         </div>

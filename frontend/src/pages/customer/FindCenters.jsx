@@ -108,7 +108,7 @@ export default function FindCenters() {
       {showOthers && (
         <div className="card">
           <h3>Other garages nearby</h3>
-          <p className="small muted">From Google Places. These are not on SVMS, so you cannot book them here.</p>
+          <p className="small muted">From Google Places. These are not on MotoClinicz, so you cannot book them here.</p>
           {othersError && <div className="alert bad">{othersError}</div>}
           {others && !others.available && <p className="small muted">{others.message}</p>}
           {others?.available && others.places.length === 0 && <p className="small muted">No other garages found in this area.</p>}

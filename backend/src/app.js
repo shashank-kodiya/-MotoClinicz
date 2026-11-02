@@ -32,7 +32,7 @@ export function createApp() {
 
   app.get('/', (req, res) => {
   res.status(200).json({
-    message: 'SVMS backend is running successfully',
+    message: 'MotoClinicz backend is running successfully',
     status: 'ok'
   });
 });

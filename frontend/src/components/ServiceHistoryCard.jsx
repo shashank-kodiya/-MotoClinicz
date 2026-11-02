@@ -54,7 +54,7 @@ export default function ServiceHistoryCard({ vehicleId, regNumber }) {
         {h && <span className={`chip ${h.odometerConsistent ? 'good' : 'warn'}`}>{h.odometerConsistent ? 'Odometer consistent' : 'Odometer went down'}</span>}
       </div>
       <p className="small muted">
-        Selling this vehicle? Download a report of every service done through Smart Vehicle Service. It has a QR code the buyer
+        Selling this vehicle? Download a report of every service done through MotoClinicz. It has a QR code the buyer
         can scan to see the live record, so they know it is genuine. Your name and phone are not shown.
       </p>
 

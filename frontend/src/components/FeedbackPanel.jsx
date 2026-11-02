@@ -40,7 +40,7 @@ export default function FeedbackPanel({ bookingId, status }) {
       await api.post(`/bookings/${bookingId}/complaints`, cForm);
       setCForm({ category: '', description: '' });
       setOpen(false);
-      setCMsg({ tone: 'good', text: 'Your complaint was sent to the service center and to SVMS support.' });
+      setCMsg({ tone: 'good', text: 'Your complaint was sent to the service center and to MotoClinicz support.' });
       load();
     } catch (err) { setCMsg({ tone: 'bad', text: errorMessage(err) }); } finally { setBusy(false); }
   };

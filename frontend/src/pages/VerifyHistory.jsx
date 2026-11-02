@@ -23,7 +23,7 @@ export default function VerifyHistory() {
   return (
     <div className="auth-wrap">
       <div className="card verify-card history-card">
-        <div className="brand"><span className="brand-mark">SV</span><div><b>Smart Vehicle Service</b><span>Service history check</span></div></div>
+        <div className="brand"><span className="brand-mark">MC</span><div><b>MotoClinicz</b><span>Service history check</span></div></div>
         {!res ? <p className="muted">Checking…</p> : res.valid ? (
           <>
             <div className="alert good">
@@ -79,7 +79,7 @@ export default function VerifyHistory() {
             <span className="small">{res.message}</span>
           </div>
         )}
-        <Link className="small" to="/login">Go to Smart Vehicle Service</Link>
+        <Link className="small" to="/login">Go to MotoClinicz</Link>
       </div>
     </div>
   );
